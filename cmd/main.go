@@ -43,7 +43,7 @@ func (m model) View() string {
 }
 
 func main() {
-	fps := flag.Int("fps", 20, "fps of the simulation")
+	fps := flag.Int("fps", 30, "fps of the simulation")
 	flag.Parse()
 	m := model{}
 	m.Core.Fps = *fps

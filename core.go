@@ -13,33 +13,15 @@ import (
 )
 
 type Core struct {
-	grid     [][]uint8
-	width    int
-	height   int
-	paused   bool
-	Fps      int
-	hideHelp bool
-	block    *Block
-}
-
-// Block is the data for a single tetris block
-// x and y are the top left coord
-// Each block is in a grid
-type Block struct {
-	x     uint8
-	y     uint8
-	shape [][]bool
-}
-
-func (b *Block) Rotate() {
-	tmp := make([][]bool, len(b.shape[0]))
-	for i := range len(b.shape[0]) {
-		tmp[i] = make([]bool, len(b.shape))
-		for j := range len(b.shape) {
-			tmp[i][j] = b.shape[j][i]
-		}
-	}
-	b.shape = tmp
+	grid         [][]uint8
+	width        int
+	height       int
+	paused       bool
+	Fps          int
+	hideHelp     bool
+	currentBlock *Block
+	blocks       [][]uint8
+	tick         int
 }
 
 type FrameMsg struct{}
@@ -53,36 +35,95 @@ func (c *Core) Animate() tea.Cmd {
 	})
 }
 
-// Init the game state
-// Setup tetris bucket
-func (c *Core) Init(wi, hi int) {
-	if wi == 0 {
-		return
-	}
-	c.width = wi
-	c.height = hi
-	c.grid = make([][]uint8, wi)
-	for i := range c.grid {
-		c.grid[i] = make([]uint8, hi)
+func (c *Core) WriteState() {
+	// First, clear screen
+	for i := range len(c.grid) {
+		for j := range len(c.grid[0]) {
+			c.grid[i][j] = 0
+		}
 	}
 
-	c.block = &Block{
-		x:     2,
-		y:     2,
-		shape: [][]bool{{false, true, false}, {true, true, true}},
+	// If screen is too small, request larger screen
+	if c.width < 14 || c.height < 24 {
+		return
 	}
 
 	// 10 blocks wide
 	// 20 blocks tall
-	bufferHor := int(math.Floor(float64(wi-11) / 2))
-	bufferVer := int(math.Floor(float64(hi-20) / 2))
-	for i := range 12 {
-		for j := range 20 {
-			if i != 0 && i != 11 && j != 19 {
+	bufferHor := uint8(math.Floor(float64(c.width)/2) - 6)
+	bufferVer := uint8(math.Floor(float64(c.height)/2) - 10)
+	for i := range uint8(12) {
+		for j := range uint8(21) {
+
+			if i == 0 || i == 11 || j == 20 {
+				c.grid[i+bufferHor][j+bufferVer] = 1
 				continue
 			}
-			c.grid[i+bufferHor][j+bufferVer] = 1
+			c.grid[i+bufferHor][j+bufferVer] = c.blocks[i-1][j]
+
+			// Write current block
 		}
+	}
+
+	for i := range uint8(12) {
+		for j := range uint8(21) {
+			if c.currentBlock != nil {
+				if i == c.currentBlock.x && j == c.currentBlock.y {
+					for a := range uint8(len(c.currentBlock.shape)) {
+						for b := range uint8(len(c.currentBlock.shape[0])) {
+							if !c.currentBlock.shape[a][b] {
+								continue
+							}
+							c.grid[i+a+bufferHor+1][j+b+bufferVer] = c.currentBlock.color
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+// Init the game state
+// Setup tetris bucket
+func (c *Core) Init(w, h int) {
+	if w < 0 {
+		return
+	}
+	c.width = w
+	c.height = h
+	c.grid = make([][]uint8, w)
+	for i := range c.grid {
+		c.grid[i] = make([]uint8, h)
+	}
+	c.blocks = make([][]uint8, 10)
+	for i := range c.blocks {
+		c.blocks[i] = make([]uint8, 20)
+	}
+
+	c.currentBlock = &Block{
+		x:     2,
+		y:     2,
+		color: 2,
+		shape: [][]bool{{false, true, false}, {true, true, true}},
+	}
+	c.WriteState()
+}
+
+func (c *Core) PlaceCurrentBlock() {
+	for i := range uint8(len(c.currentBlock.shape)) {
+		for j := range uint8(len(c.currentBlock.shape[0])) {
+			if !c.currentBlock.shape[i][j] {
+				continue
+			}
+			c.blocks[i+c.currentBlock.x][j+c.currentBlock.y] = c.currentBlock.color
+		}
+	}
+
+	c.currentBlock = &Block{
+		x:     2,
+		y:     2,
+		color: 2,
+		shape: [][]bool{{false, true, false}, {true, true, true}},
 	}
 }
 
@@ -93,35 +134,16 @@ func (c *Core) Update() {
 		return
 	}
 
-	c.grid = make([][]uint8, c.width)
-	for i := range c.grid {
-		c.grid[i] = make([]uint8, c.height)
-	}
-
-	// 10 blocks wide
-	// 20 blocks tall
-	bufferHor := uint8(math.Floor(float64(c.width-11) / 2))
-	bufferVer := uint8(math.Floor(float64(c.height-20) / 2))
-	for i := range uint8(12) {
-		for j := range uint8(20) {
-			if c.block != nil {
-				if i == c.block.x && j == c.block.y {
-					for a := range uint8(len(c.block.shape)) {
-						for b := range uint8(len(c.block.shape[0])) {
-							if !c.block.shape[a][b] {
-								continue
-							}
-							c.grid[i+a+bufferHor][j+b+bufferVer] = 2
-						}
-					}
-				}
-			}
-			if i != 0 && i != 11 && j != 19 {
-				continue
-			}
-			c.grid[i+bufferHor][j+bufferVer] = 1
+	c.tick++
+	if c.tick%5 == 0 {
+		if c.currentBlock.y+uint8(len(c.currentBlock.shape[0])) >= 20 {
+			c.PlaceCurrentBlock()
+		}
+		if c.currentBlock.y+uint8(len(c.currentBlock.shape[0])) < 20 {
+			c.currentBlock.y++
 		}
 	}
+	c.WriteState()
 }
 
 func (c Core) Ready() bool {
