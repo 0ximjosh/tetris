@@ -83,10 +83,12 @@ func (c *Core) Update() {
 	}
 	defer c.WriteState()
 
+
 	c.tick++
 	if c.tick%10 != 0 {
 		return
 	}
+	c.ProcessRows()
 	c.Drop()
 }
 

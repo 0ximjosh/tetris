@@ -83,24 +83,10 @@ func (c *Core) CanPlace(b Block) bool {
 	return true
 }
 
-// CanDrop checks if the current block can drop
-func (c *Core) CanDrop() bool {
-	// Collision with placed blocks
-	for i := range uint8(len(c.currentBlock.shape)) {
-		for j := range uint8(len(c.currentBlock.shape[0])) {
-			if !c.currentBlock.shape[i][j] {
-				continue
-			}
-			if c.blocks[i+c.currentBlock.x][j+c.currentBlock.y+1] != 0 {
-				return false
-			}
-		}
-	}
-	return true
-}
-
 func (c *Core) Drop() {
-	canDrop := c.CanDrop()
+	b := *c.currentBlock
+	b.y++
+	canDrop := c.CanPlace(b)
 
 	switch true {
 	case canDrop:
@@ -111,6 +97,25 @@ func (c *Core) Drop() {
 		c.pendingPlacement = false
 	case !c.pendingPlacement && !canDrop:
 		c.pendingPlacement = true
+	}
+}
+
+func (c *Core) ProcessRows() {
+	shift := 0
+	for yr := range len(c.blocks[0]) - 1 {
+		y := len(c.blocks[0]) - yr - 2
+		score := true
+		for x := range len(c.blocks) - 2 {
+			if shift != 0 {
+				c.blocks[x+1][y+shift] = c.blocks[x+1][y]
+			}
+			if c.blocks[x+1][y] == 0 {
+				score = false
+			}
+		}
+		if score {
+			shift++
+		}
 	}
 }
 
