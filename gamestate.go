@@ -88,8 +88,8 @@ func (c *Core) Update() {
 	if c.tick%10 != 0 {
 		return
 	}
-	c.ProcessRows()
 	c.Drop()
+	c.ProcessRows()
 }
 
 func (c Core) Ready() bool {

@@ -1,5 +1,7 @@
 package tetris
 
+import "math/rand/v2"
+
 // Block is the data for a single tetris block
 // x and y are the top left coord
 // Each block is in a grid
@@ -94,6 +96,8 @@ func (c *Core) Drop() {
 		c.currentBlock.y++
 	case c.pendingPlacement && !canDrop:
 		c.PlaceCurrentBlock()
+		b := Blocks[rand.IntN(len(Blocks))]
+		c.currentBlock = &b
 		c.pendingPlacement = false
 	case !c.pendingPlacement && !canDrop:
 		c.pendingPlacement = true
@@ -127,12 +131,5 @@ func (c *Core) PlaceCurrentBlock() {
 			}
 			c.blocks[i+c.currentBlock.x][j+c.currentBlock.y] = c.currentBlock.color
 		}
-	}
-
-	c.currentBlock = &Block{
-		x:     2,
-		y:     2,
-		color: 2,
-		shape: [][]bool{{false, true, false}, {true, true, true}},
 	}
 }

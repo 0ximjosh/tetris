@@ -38,7 +38,7 @@ func (c Core) String() string {
 	startBoxX := c.width - runewidth.StringWidth(removeColorFromString(hlines[0]))
 	endBoxY := len(hlines)
 
-	colors := []string{"#FFFFFF", "#FF8156", "#7CC0FF", "#58E8B4", "#8FA0FE"}
+	colors := []string{"#FFFFFF", "#ff595e", "#ff924c", "#ffca3a", "#c5ca30", "#8ac926", "#52a675", "#1982c4", "#4267ac", "#6a4c93"}
 
 	for y := range c.height {
 		for x := range c.width {
