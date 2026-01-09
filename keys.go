@@ -13,18 +13,18 @@ func (c *Core) HandleKeyMsg(msg tea.KeyMsg) tea.Cmd {
 		c.paused = true
 		return nil
 	case "h":
-		c.currentBlock.Move("h")
+		c.MoveBlock("h")
 		return nil
 	case "j":
-		c.currentBlock.Move("j")
+		c.Drop()
 		return nil
 	case "l":
-		c.currentBlock.Move("l")
+		c.MoveBlock("l")
 		return nil
 	case "q":
 		return tea.Quit
 	case "r":
-		c.currentBlock.Rotate()
+		c.Rotate()
 		return nil
 	default:
 		return nil

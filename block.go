@@ -11,7 +11,8 @@ type Block struct {
 }
 
 // Rotate rotates the shape 90 degrees
-func (b *Block) Rotate() {
+func (c *Core) Rotate() {
+	b := c.currentBlock
 	tmp := make([][]bool, len(b.shape))
 	for i := range len(b.shape) {
 		tmp[i] = make([]bool, len(b.shape[0]))
@@ -19,34 +20,114 @@ func (b *Block) Rotate() {
 			tmp[i][len(b.shape[0])-j-1] = b.shape[i][j]
 		}
 	}
-	b.shape = make([][]bool, len(tmp[0]))
+	tmp2 := make([][]bool, len(tmp[0]))
 	for i := range len(tmp[0]) {
-		b.shape[i] = make([]bool, len(tmp))
+		tmp2[i] = make([]bool, len(tmp))
 		for j := range len(tmp) {
-			b.shape[i][j] = tmp[j][i]
+			tmp2[i][j] = tmp[j][i]
 		}
 	}
-	if b.y+uint8(len(b.shape[0])) >= 20 {
-		b.y = uint8(20 - len(b.shape[0]))
+	tmpBlock := Block{
+		x:     b.x,
+		y:     b.y,
+		shape: tmp2,
+	}
+	if c.CanPlace(tmpBlock) {
+		b.shape = tmp2
+		return
+	}
+	tmpBlock.x = b.x + 1
+	if c.CanPlace(tmpBlock) {
+		b.shape = tmp2
+		b.x += 1
+		return
+	}
+
+	tmpBlock.x = b.x - 1
+	if c.CanPlace(tmpBlock) {
+		b.shape = tmp2
+		b.x -= 1
+		return
 	}
 }
 
-func (b *Block) Move(d string) {
+func (c *Core) MoveBlock(d string) {
 	switch d {
 	case "h":
-		if b.x == 0 {
-			return
+		tmp := *c.currentBlock
+		tmp.x -= 1
+		if c.CanPlace(tmp) {
+			c.currentBlock.x--
 		}
-		b.x--
-	case "j":
-		if b.y+uint8(len(b.shape[0])) >= 20 {
-			return
-		}
-		b.y++
 	case "l":
-		if b.x+uint8(len(b.shape)) >= 10 {
-			return
+		tmp := *c.currentBlock
+		tmp.x += 1
+		if c.CanPlace(tmp) {
+			c.currentBlock.x++
 		}
-		b.x++
+	}
+}
+
+func (c *Core) CanPlace(b Block) bool {
+	// Collision with placed blocks and walls
+	for i := range uint8(len(b.shape)) {
+		for j := range uint8(len(b.shape[0])) {
+			if !b.shape[i][j] {
+				continue
+			}
+			if c.blocks[i+b.x][j+b.y] != 0 {
+				return false
+			}
+		}
+	}
+	return true
+}
+
+// CanDrop checks if the current block can drop
+func (c *Core) CanDrop() bool {
+	// Collision with placed blocks
+	for i := range uint8(len(c.currentBlock.shape)) {
+		for j := range uint8(len(c.currentBlock.shape[0])) {
+			if !c.currentBlock.shape[i][j] {
+				continue
+			}
+			if c.blocks[i+c.currentBlock.x][j+c.currentBlock.y+1] != 0 {
+				return false
+			}
+		}
+	}
+	return true
+}
+
+func (c *Core) Drop() {
+	canDrop := c.CanDrop()
+
+	switch true {
+	case canDrop:
+		c.pendingPlacement = false
+		c.currentBlock.y++
+	case c.pendingPlacement && !canDrop:
+		c.PlaceCurrentBlock()
+		c.pendingPlacement = false
+	case !c.pendingPlacement && !canDrop:
+		c.pendingPlacement = true
+	}
+}
+
+func (c *Core) PlaceCurrentBlock() {
+	for i := range uint8(len(c.currentBlock.shape)) {
+		for j := range uint8(len(c.currentBlock.shape[0])) {
+			if !c.currentBlock.shape[i][j] {
+				continue
+			}
+			c.blocks[i+c.currentBlock.x][j+c.currentBlock.y] = c.currentBlock.color
+		}
+	}
+
+	c.currentBlock = &Block{
+		x:     2,
+		y:     2,
+		color: 2,
+		shape: [][]bool{{false, true, false}, {true, true, true}},
 	}
 }
