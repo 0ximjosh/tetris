@@ -6,8 +6,8 @@ import "math/rand/v2"
 // x and y are the top left coord
 // Each block is in a grid
 type Block struct {
-	x     uint8
-	y     uint8
+	x     int
+	y     int
 	shape [][]bool
 	color uint8
 }
@@ -45,6 +45,13 @@ func (c *Core) Rotate() {
 		return
 	}
 
+	tmpBlock.x = b.x + 2
+	if c.CanPlace(tmpBlock) {
+		b.shape = tmp2
+		b.x += 2
+		return
+	}
+
 	tmpBlock.x = b.x - 1
 	if c.CanPlace(tmpBlock) {
 		b.shape = tmp2
@@ -72,10 +79,13 @@ func (c *Core) MoveBlock(d string) {
 
 func (c *Core) CanPlace(b Block) bool {
 	// Collision with placed blocks and walls
-	for i := range uint8(len(b.shape)) {
-		for j := range uint8(len(b.shape[0])) {
+	for i := range len(b.shape) {
+		for j := range len(b.shape[0]) {
 			if !b.shape[i][j] {
 				continue
+			}
+			if i+b.x < 0 {
+				return false
 			}
 			if c.blocks[i+b.x][j+b.y] != 0 {
 				return false
@@ -124,8 +134,8 @@ func (c *Core) ProcessRows() {
 }
 
 func (c *Core) PlaceCurrentBlock() {
-	for i := range uint8(len(c.currentBlock.shape)) {
-		for j := range uint8(len(c.currentBlock.shape[0])) {
+	for i := range len(c.currentBlock.shape) {
+		for j := range len(c.currentBlock.shape[0]) {
 			if !c.currentBlock.shape[i][j] {
 				continue
 			}

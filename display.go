@@ -47,11 +47,11 @@ func (c Core) String() string {
 				continue
 			}
 			if c.grid[x][y] == 0 {
-				b.WriteRune(' ')
+				b.WriteString("  ")
 				continue
 			}
 			color, _ := colorful.Hex(colors[c.grid[x][y]-1])
-			s := lipgloss.NewStyle().SetString(" ").Background(lipgloss.Color(color.Hex()))
+			s := lipgloss.NewStyle().SetString("  ").Background(lipgloss.Color(color.Hex()))
 			b.WriteString(s.String())
 		}
 		if y == c.height-1 {
