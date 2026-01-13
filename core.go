@@ -1,5 +1,7 @@
 package tetris
 
+import "time"
+
 type Core struct {
 	grid             [][]uint8
 	width            int
@@ -15,4 +17,5 @@ type Core struct {
 	tick             int
 	score            uint64
 	gameOver         bool
+	startTime        time.Time
 }

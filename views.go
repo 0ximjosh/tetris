@@ -141,5 +141,6 @@ func (c *Core) GetGameView() string {
 		b.WriteRune('\n')
 	}
 
+
 	return b.String()
 }

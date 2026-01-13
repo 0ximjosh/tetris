@@ -2,6 +2,7 @@ package tetris
 
 import (
 	"math/rand/v2"
+	"time"
 )
 
 // Init the game state
@@ -13,6 +14,7 @@ func (c *Core) Init(w, h int) {
 	c.width = w
 	c.height = h
 	c.tickSpeed = 20
+	c.startTime = time.Now()
 
 	c.grid = make([][]uint8, 12)
 	c.blocks = make([][]uint8, 12)
