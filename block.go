@@ -1,6 +1,9 @@
 package tetris
 
-import "math/rand/v2"
+import (
+	"math/rand/v2"
+	"time"
+)
 
 // Block is the data for a single tetris block
 // x and y are the top left coord
@@ -107,6 +110,7 @@ func (c *Core) NextBlock() {
 	c.nextBlock = &b
 	if !c.CanPlace(*c.nextBlock) {
 		c.gameOver = true
+		c.endTime = time.Now()
 	}
 }
 

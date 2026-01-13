@@ -3,12 +3,12 @@ package tetris
 import "time"
 
 type Core struct {
-	grid             [][]uint8
-	width            int
-	height           int
-	paused           bool
-	Fps              int
-	hideHelp         bool
+	grid   [][]uint8
+	width  int
+	height int
+	paused bool
+	Fps    int
+	// hideHelp         bool TODO
 	currentBlock     *Block
 	nextBlock        *Block
 	pendingPlacement bool
@@ -18,4 +18,5 @@ type Core struct {
 	score            uint64
 	gameOver         bool
 	startTime        time.Time
+	endTime          time.Time
 }

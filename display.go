@@ -40,6 +40,9 @@ func (c Core) String() string {
 	gameViewStartY := int(math.Floor(float64(c.height)/2) - 10)
 
 	playtime := lipgloss.NewStyle().Width(gameViewLen).Align(lipgloss.Center).Render(time.Since(c.startTime).Truncate(time.Second).String())
+	if c.gameOver {
+		playtime = lipgloss.NewStyle().Width(gameViewLen).Align(lipgloss.Center).Render(c.endTime.Sub(c.startTime).Truncate(time.Second).String())
+	}
 	gameViewLines = append(gameViewLines, playtime)
 
 	// TODO fix score box and next box being out of view
