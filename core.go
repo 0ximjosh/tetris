@@ -11,6 +11,7 @@ type Core struct {
 	nextBlock        *Block
 	pendingPlacement bool
 	blocks           [][]uint8
+	tickSpeed        int
 	tick             int
 	score            uint64
 	gameOver         bool

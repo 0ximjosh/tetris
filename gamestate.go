@@ -12,6 +12,7 @@ func (c *Core) Init(w, h int) {
 	}
 	c.width = w
 	c.height = h
+	c.tickSpeed = 20
 
 	c.grid = make([][]uint8, 12)
 	c.blocks = make([][]uint8, 12)
@@ -38,13 +39,15 @@ func (c *Core) Update() {
 	if !c.Ready() {
 		return
 	}
-
-	c.tick++
-	if c.tick%10 != 0 {
-		return
-	}
 	if c.gameOver {
 		return
+	}
+	c.tick++
+	if c.tick%c.tickSpeed != 0 {
+		return
+	}
+	if c.tick%100 == 0 && c.tickSpeed != 1 {
+		c.tickSpeed -= 1
 	}
 	c.Drop()
 	c.ProcessRows()
