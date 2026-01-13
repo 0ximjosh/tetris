@@ -9,7 +9,7 @@ import (
 	"github.com/lucasb-eyer/go-colorful"
 )
 
-func (c *Core) GetScoreBox() string {
+func (c *Core) GetScoreView() string {
 	dialogBoxStyle := lipgloss.NewStyle().
 		Border(lipgloss.RoundedBorder()).
 		BorderForeground(lipgloss.Color("#71797E")).
@@ -20,6 +20,19 @@ func (c *Core) GetScoreBox() string {
 		BorderBottom(true).
 		Width(12)
 	return dialogBoxStyle.Render(fmt.Sprintf("Score\n%d", c.score))
+}
+
+func (c *Core) GetGameOverView() string {
+	dialogBoxStyle := lipgloss.NewStyle().
+		Border(lipgloss.RoundedBorder()).
+		BorderForeground(lipgloss.Color("#71797E")).
+		Padding(1).
+		BorderTop(true).
+		BorderLeft(true).
+		BorderRight(true).
+		BorderBottom(true).
+		Width(12)
+	return dialogBoxStyle.Render("Game Over!")
 }
 
 func (c *Core) GetNextBlockView() string {
@@ -104,7 +117,7 @@ func (c *Core) GetGameView() string {
 		}
 	}
 
-	if c.currentBlock != nil {
+	if c.currentBlock != nil && !c.gameOver {
 		for a := range len(c.currentBlock.shape) {
 			for b := range len(c.currentBlock.shape[0]) {
 				if !c.currentBlock.shape[a][b] {

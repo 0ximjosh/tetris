@@ -13,4 +13,5 @@ type Core struct {
 	blocks           [][]uint8
 	tick             int
 	score            uint64
+	gameOver         bool
 }

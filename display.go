@@ -39,7 +39,7 @@ func (c Core) String() string {
 	gameViewStartY := int(math.Floor(float64(c.height)/2) - 10)
 
 	// TODO fix score box and next box being out of view
-	scoreBox := c.GetScoreBox()
+	scoreBox := c.GetScoreView()
 	scoreBoxLines := strings.Split(scoreBox, "\n")
 	scoreBoxLen := runewidth.StringWidth(removeColorFromString(scoreBoxLines[0]))
 	scoreBoxStartX := int(math.Floor(float64(c.width)/2)) - gameViewLen/2 - scoreBoxLen - 3
@@ -49,7 +49,13 @@ func (c Core) String() string {
 	nextBlockViewLines := strings.Split(nextBlockView, "\n")
 	nextBlockViewLen := runewidth.StringWidth(removeColorFromString(nextBlockViewLines[0]))
 	nextBlockViewStartX := int(math.Floor(float64(c.width)/2)) - gameViewLen/2 - nextBlockViewLen - 3
-	nextBlockViewStartY := int(math.Floor(float64(c.height)/2)) - len(scoreBoxLines) + 2
+	nextBlockViewStartY := int(math.Floor(float64(c.height)/2)) + len(scoreBoxLines) - 10
+
+	gameOverView := c.GetGameOverView()
+	gameOverViewLines := strings.Split(gameOverView, "\n")
+	gameOverViewLen := runewidth.StringWidth(removeColorFromString(gameOverViewLines[0]))
+	gameOverViewStartX := int(math.Floor(float64(c.width)/2)) - gameViewLen/2 - nextBlockViewLen - 3
+	gameOverViewStartY := int(math.Floor(float64(c.height)/2)) + len(scoreBoxLines) + len(nextBlockViewLines) - 10
 
 	// If screen is too small, request larger screen
 	if c.width < gameViewLen || c.height < 24 {
@@ -77,6 +83,13 @@ func (c Core) String() string {
 			if x >= scoreBoxStartX && x < scoreBoxStartX+scoreBoxLen && y >= scoreBoxStartY && y < scoreBoxStartY+len(scoreBoxLines) {
 				if x == scoreBoxStartX {
 					b.WriteString(scoreBoxLines[y-scoreBoxStartY])
+				}
+				continue
+			}
+
+			if x >= gameOverViewStartX && x < gameOverViewStartX+gameOverViewLen && y >= gameOverViewStartY && y < gameOverViewStartY+len(gameOverViewLines) && c.gameOver {
+				if x == gameOverViewStartX {
+					b.WriteString(gameOverViewLines[y-gameOverViewStartY])
 				}
 				continue
 			}

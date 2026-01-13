@@ -14,6 +14,9 @@ type Block struct {
 
 // Rotate rotates the shape 90 degrees
 func (c *Core) Rotate() {
+	if c.gameOver {
+		return
+	}
 	b := c.currentBlock
 	tmp := make([][]bool, len(b.shape))
 	for i := range len(b.shape) {
@@ -61,6 +64,9 @@ func (c *Core) Rotate() {
 }
 
 func (c *Core) MoveBlock(d string) {
+	if c.gameOver {
+		return
+	}
 	switch d {
 	case "h":
 		tmp := *c.currentBlock
@@ -99,9 +105,15 @@ func (c *Core) NextBlock() {
 	b := Blocks[rand.IntN(len(Blocks))]
 	c.currentBlock = c.nextBlock
 	c.nextBlock = &b
+	if !c.CanPlace(*c.nextBlock) {
+		c.gameOver = true
+	}
 }
 
 func (c *Core) Drop() {
+	if c.gameOver {
+		return
+	}
 	b := *c.currentBlock
 	b.y++
 	canDrop := c.CanPlace(b)

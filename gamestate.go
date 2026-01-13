@@ -43,6 +43,9 @@ func (c *Core) Update() {
 	if c.tick%10 != 0 {
 		return
 	}
+	if c.gameOver {
+		return
+	}
 	c.Drop()
 	c.ProcessRows()
 }
