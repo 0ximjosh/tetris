@@ -131,6 +131,7 @@ func (c *Core) ProcessRows() {
 			shift++
 		}
 	}
+	c.score += uint64(shift*shift)
 }
 
 func (c *Core) PlaceCurrentBlock() {

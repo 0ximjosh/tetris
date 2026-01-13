@@ -81,40 +81,44 @@ func (c *Core) GetGameStateString() string {
 }
 
 func (c Core) String() string {
-	// TODO
-	//if !c.hideHelp {
-	//	help = HelpBox()
-	//}
-	c.score = 1000000000
-
-	scoreBox := c.GetGameStateString()
-	scoreLines := strings.Split(scoreBox, "\n")
 	var b strings.Builder
-	boxLen := runewidth.StringWidth(removeColorFromString(scoreLines[0]))
-	// startBoxX := c.width - boxLen
-	// endBoxY := len(scoreLines)
 
-	bufferHor := int(math.Floor(float64(c.width)/2)) - (boxLen / 2)
-	bufferVer := int(math.Floor(float64(c.height)/2) - 10)
+	// Game View
+	gameView := c.GetGameStateString()
+	gameViewLines := strings.Split(gameView, "\n")
+	gameViewLen := runewidth.StringWidth(removeColorFromString(gameViewLines[0]))
+	gameViewStartX := int(math.Floor(float64(c.width)/2)) - (gameViewLen / 2)
+	gameViewStartY := int(math.Floor(float64(c.height)/2) - 10)
+
+	scoreBox := c.GetScoreBox()
+	scoreBoxLines := strings.Split(scoreBox, "\n")
+	scoreBoxLen := runewidth.StringWidth(removeColorFromString(scoreBoxLines[0]))
+	scoreBoxStartX := int(math.Floor(float64(c.width)/2)) + gameViewLen/2 + 3
+	scoreBoxStartY := int(math.Floor(float64(c.height)/2) - 10)
 
 	// If screen is too small, request larger screen
-	if c.width < boxLen || c.height < 24 {
+	if c.width < gameViewLen || c.height < 24 {
 		return "Game zone is too small\nPlease zoom out"
 	}
 
 	for y := range c.height {
 		for x := range c.width {
-			if x < bufferHor {
-				b.WriteString(" ")
+
+			// gameView area
+			if x >= gameViewStartX && x < gameViewStartX+gameViewLen && y >= gameViewStartY && y < gameViewStartY+len(gameViewLines) {
+				if x == gameViewStartX {
+					b.WriteString(gameViewLines[y-gameViewStartY])
+				}
 				continue
 			}
-			if x == bufferHor && y > bufferVer && y < bufferVer+len(scoreLines) {
-				b.WriteString(scoreLines[y-bufferVer])
+
+			if x >= scoreBoxStartX && x < scoreBoxStartX+scoreBoxLen && y >= scoreBoxStartY && y < scoreBoxStartY+len(scoreBoxLines) {
+				if x == scoreBoxStartX {
+					b.WriteString(scoreBoxLines[y-scoreBoxStartY])
+				}
 				continue
 			}
-			//if y < endBoxY && x >= startBoxX && x < startBoxX+1 {
-			//	continue
-			//}
+			b.WriteString(" ")
 		}
 		if y == c.height-1 {
 			continue
