@@ -95,6 +95,12 @@ func (c *Core) CanPlace(b Block) bool {
 	return true
 }
 
+func (c *Core) NextBlock() {
+	b := Blocks[rand.IntN(len(Blocks))]
+	c.currentBlock = c.nextBlock
+	c.nextBlock = &b
+}
+
 func (c *Core) Drop() {
 	b := *c.currentBlock
 	b.y++
@@ -106,8 +112,7 @@ func (c *Core) Drop() {
 		c.currentBlock.y++
 	case c.pendingPlacement && !canDrop:
 		c.PlaceCurrentBlock()
-		b := Blocks[rand.IntN(len(Blocks))]
-		c.currentBlock = &b
+		c.NextBlock()
 		c.pendingPlacement = false
 	case !c.pendingPlacement && !canDrop:
 		c.pendingPlacement = true
@@ -131,7 +136,7 @@ func (c *Core) ProcessRows() {
 			shift++
 		}
 	}
-	c.score += uint64(shift*shift)
+	c.score += uint64(shift * shift)
 }
 
 func (c *Core) PlaceCurrentBlock() {

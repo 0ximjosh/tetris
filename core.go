@@ -8,6 +8,7 @@ type Core struct {
 	Fps              int
 	hideHelp         bool
 	currentBlock     *Block
+	nextBlock        *Block
 	pendingPlacement bool
 	blocks           [][]uint8
 	tick             int

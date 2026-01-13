@@ -27,8 +27,9 @@ func (c *Core) Init(w, h int) {
 	}
 
 	b := Blocks[rand.IntN(len(Blocks))]
-
-	c.currentBlock = &b
+	c.nextBlock = &b
+	b2 := Blocks[rand.IntN(len(Blocks))]
+	c.currentBlock = &b2
 }
 
 // Update the game grid

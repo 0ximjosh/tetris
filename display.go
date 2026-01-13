@@ -7,8 +7,6 @@ import (
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
-	"github.com/lucasb-eyer/go-colorful"
 	"github.com/mattn/go-runewidth"
 )
 
@@ -30,71 +28,28 @@ func removeColorFromString(text string) string {
 	return re.ReplaceAllString(text, "")
 }
 
-func (c *Core) GetGameStateString() string {
-	var b strings.Builder
-
-	// If screen is too small, request larger screen
-	if c.width == 0 || c.height == 0 {
-		return ""
-	}
-
-	// First, clear screen
-	for i := range len(c.grid) {
-		for j := range len(c.grid[0]) {
-			c.grid[i][j] = 0
-		}
-	}
-
-	// 10 blocks wide
-	// 20 blocks tall
-	for i := range 12 {
-		for j := range 21 {
-			c.grid[i][j] = c.blocks[i][j]
-		}
-	}
-
-	if c.currentBlock != nil {
-		for a := range len(c.currentBlock.shape) {
-			for b := range len(c.currentBlock.shape[0]) {
-				if !c.currentBlock.shape[a][b] {
-					continue
-				}
-				c.grid[c.currentBlock.x+a][c.currentBlock.y+b] = c.currentBlock.color
-			}
-		}
-	}
-
-	for y := range len(c.grid[0]) {
-		for x := range len(c.grid) {
-			if c.grid[x][y] == 0 {
-				b.WriteString("  ")
-				continue
-			}
-			color, _ := colorful.Hex(colors[c.grid[x][y]-1])
-			s := lipgloss.NewStyle().SetString("  ").Background(lipgloss.Color(color.Hex()))
-			b.WriteString(s.String())
-		}
-		b.WriteRune('\n')
-	}
-
-	return b.String()
-}
-
 func (c Core) String() string {
 	var b strings.Builder
 
 	// Game View
-	gameView := c.GetGameStateString()
+	gameView := c.GetGameView()
 	gameViewLines := strings.Split(gameView, "\n")
 	gameViewLen := runewidth.StringWidth(removeColorFromString(gameViewLines[0]))
 	gameViewStartX := int(math.Floor(float64(c.width)/2)) - (gameViewLen / 2)
 	gameViewStartY := int(math.Floor(float64(c.height)/2) - 10)
 
+	// TODO fix score box and next box being out of view
 	scoreBox := c.GetScoreBox()
 	scoreBoxLines := strings.Split(scoreBox, "\n")
 	scoreBoxLen := runewidth.StringWidth(removeColorFromString(scoreBoxLines[0]))
-	scoreBoxStartX := int(math.Floor(float64(c.width)/2)) + gameViewLen/2 + 3
+	scoreBoxStartX := int(math.Floor(float64(c.width)/2)) - gameViewLen/2 - scoreBoxLen - 3
 	scoreBoxStartY := int(math.Floor(float64(c.height)/2) - 10)
+
+	nextBlockView := c.GetNextBlockView()
+	nextBlockViewLines := strings.Split(nextBlockView, "\n")
+	nextBlockViewLen := runewidth.StringWidth(removeColorFromString(nextBlockViewLines[0]))
+	nextBlockViewStartX := int(math.Floor(float64(c.width)/2)) - gameViewLen/2 - nextBlockViewLen - 3
+	nextBlockViewStartY := int(math.Floor(float64(c.height)/2)) - len(scoreBoxLines) + 2
 
 	// If screen is too small, request larger screen
 	if c.width < gameViewLen || c.height < 24 {
@@ -108,6 +63,13 @@ func (c Core) String() string {
 			if x >= gameViewStartX && x < gameViewStartX+gameViewLen && y >= gameViewStartY && y < gameViewStartY+len(gameViewLines) {
 				if x == gameViewStartX {
 					b.WriteString(gameViewLines[y-gameViewStartY])
+				}
+				continue
+			}
+
+			if x >= nextBlockViewStartX && x < nextBlockViewStartX+nextBlockViewLen && y >= nextBlockViewStartY && y < nextBlockViewStartY+len(nextBlockViewLines) {
+				if x == nextBlockViewStartX {
+					b.WriteString(nextBlockViewLines[y-nextBlockViewStartY])
 				}
 				continue
 			}
