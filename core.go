@@ -11,4 +11,5 @@ type Core struct {
 	pendingPlacement bool
 	blocks           [][]uint8
 	tick             int
+	score            uint64
 }
