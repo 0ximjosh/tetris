@@ -27,8 +27,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		return m, m.Core.HandleKeyMsg(msg)
 	case tea.WindowSizeMsg:
-		// TODO should probably handle this better?
-		m.Core.Init(msg.Width, msg.Height)
+		m.Core.UpdateDims(msg.Width, msg.Height)
 		return m, nil
 	case tetris.FrameMsg:
 		m.Core.Update()
@@ -47,6 +46,7 @@ func main() {
 	flag.Parse()
 	m := model{}
 	m.Core.Fps = *fps
+	m.Core.Init(0, 0)
 
 	p := tea.NewProgram(m, tea.WithAltScreen())
 	if _, err := p.Run(); err != nil {

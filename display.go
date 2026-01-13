@@ -65,6 +65,7 @@ func (c Core) String() string {
 	if c.width < gameViewLen || c.height < 24 {
 		return "Game zone is too small\nPlease zoom out"
 	}
+	shouldPrintBoxes := c.width > gameViewLen+nextBlockViewLen+20
 
 	for y := range c.height {
 		for x := range c.width {
@@ -77,21 +78,21 @@ func (c Core) String() string {
 				continue
 			}
 
-			if x >= nextBlockViewStartX && x < nextBlockViewStartX+nextBlockViewLen && y >= nextBlockViewStartY && y < nextBlockViewStartY+len(nextBlockViewLines) {
+			if shouldPrintBoxes && x >= nextBlockViewStartX && x < nextBlockViewStartX+nextBlockViewLen && y >= nextBlockViewStartY && y < nextBlockViewStartY+len(nextBlockViewLines) {
 				if x == nextBlockViewStartX {
 					b.WriteString(nextBlockViewLines[y-nextBlockViewStartY])
 				}
 				continue
 			}
 
-			if x >= scoreBoxStartX && x < scoreBoxStartX+scoreBoxLen && y >= scoreBoxStartY && y < scoreBoxStartY+len(scoreBoxLines) {
+			if shouldPrintBoxes && x >= scoreBoxStartX && x < scoreBoxStartX+scoreBoxLen && y >= scoreBoxStartY && y < scoreBoxStartY+len(scoreBoxLines) {
 				if x == scoreBoxStartX {
 					b.WriteString(scoreBoxLines[y-scoreBoxStartY])
 				}
 				continue
 			}
 
-			if x >= gameOverViewStartX && x < gameOverViewStartX+gameOverViewLen && y >= gameOverViewStartY && y < gameOverViewStartY+len(gameOverViewLines) && c.gameOver {
+			if shouldPrintBoxes && x >= gameOverViewStartX && x < gameOverViewStartX+gameOverViewLen && y >= gameOverViewStartY && y < gameOverViewStartY+len(gameOverViewLines) && c.gameOver {
 				if x == gameOverViewStartX {
 					b.WriteString(gameOverViewLines[y-gameOverViewStartY])
 				}

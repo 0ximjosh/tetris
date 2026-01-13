@@ -5,6 +5,11 @@ import (
 	"time"
 )
 
+func (c *Core) UpdateDims(w, h int) {
+	c.width = w
+	c.height = h
+}
+
 // Init the game state
 // Setup tetris bucket
 func (c *Core) Init(w, h int) {
@@ -13,6 +18,7 @@ func (c *Core) Init(w, h int) {
 	}
 	c.width = w
 	c.height = h
+
 	c.tickSpeed = 20
 	c.startTime = time.Now()
 
