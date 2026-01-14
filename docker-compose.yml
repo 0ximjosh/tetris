@@ -1,0 +1,11 @@
+services:
+  server:
+    image: ghcr.io/0ximjosh/tetris-server:latest
+    build:
+      context: .
+      platforms:
+        - linux/amd64
+        - linux/arm64
+    restart: always
+    ports:
+      - 22:22
