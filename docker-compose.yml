@@ -11,3 +11,8 @@ services:
     restart: always
     ports:
       - 22:22
+    volumes:
+      - ssh:/app/.ssh
+
+volumes:
+  ssh:
