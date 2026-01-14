@@ -8,6 +8,8 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"errors"
+	"flag"
+	"fmt"
 	"net"
 	"os"
 	"os/signal"
@@ -26,14 +28,12 @@ import (
 	recv "github.com/charmbracelet/wish/recover"
 )
 
-const (
-	host = "localhost"
-	port = "23234"
-)
-
 func main() {
+	port := flag.String("port", "2222", "Port for new connections")
+	host := flag.String("host", "localhost", "Host address")
+	flag.Parse()
 	s, err := wish.NewServer(
-		wish.WithAddress(net.JoinHostPort(host, port)),
+		wish.WithAddress(net.JoinHostPort(*host, *port)),
 		wish.WithHostKeyPath(".ssh/id_ed25519"),
 		wish.WithMiddleware(
 			recv.Middleware(
@@ -55,7 +55,7 @@ func main() {
 
 	done := make(chan os.Signal, 1)
 	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
-	log.Info("Starting SSH server", "host", host, "port", port)
+	log.Info("Starting SSH server", "host", *host, "port", *port)
 	go func() {
 		if err = s.ListenAndServe(); err != nil && !errors.Is(err, ssh.ErrServerClosed) {
 			log.Error("Could not start server", "error", err)
