@@ -9,7 +9,6 @@ import (
 	"encoding/hex"
 	"errors"
 	"flag"
-	"fmt"
 	"net"
 	"os"
 	"os/signal"
