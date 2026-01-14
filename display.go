@@ -15,6 +15,8 @@ type FrameMsg struct{}
 
 var colors = []string{"#FFFFFF", "#ff595e", "#ff924c", "#ffca3a", "#c5ca30", "#8ac926", "#52a675", "#1982c4", "#4267ac", "#6a4c93"}
 
+// Animate sends a frame msg
+// TODO rework so we only call this when we need, not at a crazy fps
 func (m Model) Animate() tea.Cmd {
 	if m.paused {
 		return nil
