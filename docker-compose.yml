@@ -7,7 +7,7 @@ services:
         - linux/amd64
         - linux/arm64
     env_file: .env
-    command: --host ${HOST}
+    command: --host ${HOST:-localhost} --port ${PORT:-2222}
     restart: always
     ports:
       - 22:22
