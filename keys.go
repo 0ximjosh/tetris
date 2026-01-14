@@ -3,28 +3,28 @@ package tetris
 
 import tea "github.com/charmbracelet/bubbletea"
 
-func (c *Core) HandleKeyMsg(msg tea.KeyMsg) tea.Cmd {
+func (m *Model) HandleKeyMsg(msg tea.KeyMsg) tea.Cmd {
 	switch msg.String() {
 	case " ":
-		if c.paused {
-			c.paused = false
-			return c.Animate()
+		if m.paused {
+			m.paused = false
+			return m.Animate()
 		}
-		c.paused = true
+		m.paused = true
 		return nil
 	case "h":
-		c.MoveBlock("h")
+		m.MoveBlock("h")
 		return nil
 	case "j":
-		c.Drop()
+		m.Drop()
 		return nil
 	case "l":
-		c.MoveBlock("l")
+		m.MoveBlock("l")
 		return nil
-	case "q":
+	case "q", "ctrl+c":
 		return tea.Quit
 	case "r":
-		c.Rotate()
+		m.Rotate()
 		return nil
 	default:
 		return nil

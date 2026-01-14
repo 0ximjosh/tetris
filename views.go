@@ -9,8 +9,8 @@ import (
 	"github.com/lucasb-eyer/go-colorful"
 )
 
-func (c *Core) GetScoreView() string {
-	dialogBoxStyle := lipgloss.NewStyle().
+func (m *Model) GetScoreView() string {
+	dialogBoxStyle := m.Renderer.NewStyle().
 		Border(lipgloss.RoundedBorder()).
 		BorderForeground(lipgloss.Color("#71797E")).
 		Padding(1, 3, 1, 2).
@@ -19,11 +19,11 @@ func (c *Core) GetScoreView() string {
 		BorderRight(true).
 		BorderBottom(true).
 		Width(12)
-	return dialogBoxStyle.Render(fmt.Sprintf("Score\n%d", c.score))
+	return dialogBoxStyle.Render(fmt.Sprintf("Score\n%d", m.score))
 }
 
-func (c *Core) GetGameOverView() string {
-	dialogBoxStyle := lipgloss.NewStyle().
+func (m *Model) GetGameOverView() string {
+	dialogBoxStyle := m.Renderer.NewStyle().
 		Border(lipgloss.RoundedBorder()).
 		BorderForeground(lipgloss.Color("#71797E")).
 		Padding(1).
@@ -35,11 +35,11 @@ func (c *Core) GetGameOverView() string {
 	return dialogBoxStyle.Render("Game Over!")
 }
 
-func (c *Core) GetNextBlockView() string {
-	if c.nextBlock == nil || c.currentBlock == nil {
+func (m *Model) GetNextBlockView() string {
+	if m.nextBlock == nil || m.currentBlock == nil {
 		return ""
 	}
-	dialogBoxStyle := lipgloss.NewStyle().
+	dialogBoxStyle := m.Renderer.NewStyle().
 		Border(lipgloss.RoundedBorder()).
 		BorderForeground(lipgloss.Color("#71797E")).
 		Padding(1).
@@ -51,18 +51,18 @@ func (c *Core) GetNextBlockView() string {
 		Height(8)
 	var b strings.Builder
 	b.WriteString("Next Block\n\n")
-	for y := range len(c.nextBlock.shape[0]) {
+	for y := range len(m.nextBlock.shape[0]) {
 		b.WriteString("  ")
-		for x := range len(c.nextBlock.shape) {
-			if !c.nextBlock.shape[x][y] {
+		for x := range len(m.nextBlock.shape) {
+			if !m.nextBlock.shape[x][y] {
 				b.WriteString("  ")
 				continue
 			}
-			color, _ := colorful.Hex(colors[c.nextBlock.color-1])
-			s := lipgloss.NewStyle().SetString("  ").Background(lipgloss.Color(color.Hex()))
+			color, _ := colorful.Hex(colors[m.nextBlock.color-1])
+			s := m.Renderer.NewStyle().SetString("  ").Background(lipgloss.Color(color.Hex()))
 			b.WriteString(s.String())
 		}
-		if y == len(c.nextBlock.shape[0])-1 {
+		if y == len(m.nextBlock.shape[0])-1 {
 			break
 		}
 		b.WriteRune('\n')
@@ -71,8 +71,8 @@ func (c *Core) GetNextBlockView() string {
 }
 
 // GetHelpBox TODO
-func (c *Core) GetHelpBox() string {
-	dialogBoxStyle := lipgloss.NewStyle().
+func (m *Model) GetHelpBox() string {
+	dialogBoxStyle := m.Renderer.NewStyle().
 		Border(lipgloss.RoundedBorder()).
 		BorderForeground(lipgloss.Color("#71797E")).
 		Padding(1, 3, 1, 2).
@@ -94,18 +94,18 @@ func (c *Core) GetHelpBox() string {
 	return dialogBoxStyle.Render(options.String())
 }
 
-func (c *Core) GetGameView() string {
+func (m *Model) GetGameView() string {
 	var b strings.Builder
 
 	// If screen is too small, request larger screen
-	if c.width == 0 || c.height == 0 {
+	if m.width == 0 || m.height == 0 {
 		return ""
 	}
 
 	// First, clear screen
-	for i := range len(c.grid) {
-		for j := range len(c.grid[0]) {
-			c.grid[i][j] = 0
+	for i := range len(m.grid) {
+		for j := range len(m.grid[0]) {
+			m.grid[i][j] = 0
 		}
 	}
 
@@ -113,34 +113,33 @@ func (c *Core) GetGameView() string {
 	// 20 blocks tall
 	for i := range 12 {
 		for j := range 21 {
-			c.grid[i][j] = c.blocks[i][j]
+			m.grid[i][j] = m.blocks[i][j]
 		}
 	}
 
-	if c.currentBlock != nil && !c.gameOver {
-		for a := range len(c.currentBlock.shape) {
-			for b := range len(c.currentBlock.shape[0]) {
-				if !c.currentBlock.shape[a][b] {
+	if m.currentBlock != nil && !m.gameOver {
+		for a := range len(m.currentBlock.shape) {
+			for b := range len(m.currentBlock.shape[0]) {
+				if !m.currentBlock.shape[a][b] {
 					continue
 				}
-				c.grid[c.currentBlock.x+a][c.currentBlock.y+b] = c.currentBlock.color
+				m.grid[m.currentBlock.x+a][m.currentBlock.y+b] = m.currentBlock.color
 			}
 		}
 	}
 
-	for y := range len(c.grid[0]) {
-		for x := range len(c.grid) {
-			if c.grid[x][y] == 0 {
+	for y := range len(m.grid[0]) {
+		for x := range len(m.grid) {
+			if m.grid[x][y] == 0 {
 				b.WriteString("  ")
 				continue
 			}
-			color, _ := colorful.Hex(colors[c.grid[x][y]-1])
-			s := lipgloss.NewStyle().SetString("  ").Background(lipgloss.Color(color.Hex()))
+			color, _ := colorful.Hex(colors[m.grid[x][y]-1])
+			s := m.Renderer.NewStyle().SetString("  ").Background(lipgloss.Color(color.Hex()))
 			b.WriteString(s.String())
 		}
 		b.WriteRune('\n')
 	}
-
 
 	return b.String()
 }

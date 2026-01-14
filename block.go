@@ -16,11 +16,11 @@ type Block struct {
 }
 
 // Rotate rotates the shape 90 degrees
-func (c *Core) Rotate() {
-	if c.gameOver {
+func (m *Model) Rotate() {
+	if m.gameOver {
 		return
 	}
-	b := c.currentBlock
+	b := m.currentBlock
 	tmp := make([][]bool, len(b.shape))
 	for i := range len(b.shape) {
 		tmp[i] = make([]bool, len(b.shape[0]))
@@ -40,53 +40,53 @@ func (c *Core) Rotate() {
 		y:     b.y,
 		shape: tmp2,
 	}
-	if c.CanPlace(tmpBlock) {
+	if m.CanPlace(tmpBlock) {
 		b.shape = tmp2
 		return
 	}
 	tmpBlock.x = b.x + 1
-	if c.CanPlace(tmpBlock) {
+	if m.CanPlace(tmpBlock) {
 		b.shape = tmp2
 		b.x += 1
 		return
 	}
 
 	tmpBlock.x = b.x + 2
-	if c.CanPlace(tmpBlock) {
+	if m.CanPlace(tmpBlock) {
 		b.shape = tmp2
 		b.x += 2
 		return
 	}
 
 	tmpBlock.x = b.x - 1
-	if c.CanPlace(tmpBlock) {
+	if m.CanPlace(tmpBlock) {
 		b.shape = tmp2
 		b.x -= 1
 		return
 	}
 }
 
-func (c *Core) MoveBlock(d string) {
-	if c.gameOver {
+func (m *Model) MoveBlock(d string) {
+	if m.gameOver {
 		return
 	}
 	switch d {
 	case "h":
-		tmp := *c.currentBlock
+		tmp := *m.currentBlock
 		tmp.x -= 1
-		if c.CanPlace(tmp) {
-			c.currentBlock.x--
+		if m.CanPlace(tmp) {
+			m.currentBlock.x--
 		}
 	case "l":
-		tmp := *c.currentBlock
+		tmp := *m.currentBlock
 		tmp.x += 1
-		if c.CanPlace(tmp) {
-			c.currentBlock.x++
+		if m.CanPlace(tmp) {
+			m.currentBlock.x++
 		}
 	}
 }
 
-func (c *Core) CanPlace(b Block) bool {
+func (m *Model) CanPlace(b Block) bool {
 	// Collision with placed blocks and walls
 	for i := range len(b.shape) {
 		for j := range len(b.shape[0]) {
@@ -96,7 +96,7 @@ func (c *Core) CanPlace(b Block) bool {
 			if i+b.x < 0 {
 				return false
 			}
-			if c.blocks[i+b.x][j+b.y] != 0 {
+			if m.blocks[i+b.x][j+b.y] != 0 {
 				return false
 			}
 		}
@@ -104,47 +104,47 @@ func (c *Core) CanPlace(b Block) bool {
 	return true
 }
 
-func (c *Core) NextBlock() {
+func (m *Model) NextBlock() {
 	b := Blocks[rand.IntN(len(Blocks))]
-	c.currentBlock = c.nextBlock
-	c.nextBlock = &b
-	if !c.CanPlace(*c.nextBlock) {
-		c.gameOver = true
-		c.endTime = time.Now()
+	m.currentBlock = m.nextBlock
+	m.nextBlock = &b
+	if !m.CanPlace(*m.nextBlock) {
+		m.gameOver = true
+		m.endTime = time.Now()
 	}
 }
 
-func (c *Core) Drop() {
-	if c.gameOver {
+func (m *Model) Drop() {
+	if m.gameOver {
 		return
 	}
-	b := *c.currentBlock
+	b := *m.currentBlock
 	b.y++
-	canDrop := c.CanPlace(b)
+	canDrop := m.CanPlace(b)
 
 	switch true {
 	case canDrop:
-		c.pendingPlacement = false
-		c.currentBlock.y++
-	case c.pendingPlacement && !canDrop:
-		c.PlaceCurrentBlock()
-		c.NextBlock()
-		c.pendingPlacement = false
-	case !c.pendingPlacement && !canDrop:
-		c.pendingPlacement = true
+		m.pendingPlacement = false
+		m.currentBlock.y++
+	case m.pendingPlacement && !canDrop:
+		m.PlaceCurrentBlock()
+		m.NextBlock()
+		m.pendingPlacement = false
+	case !m.pendingPlacement && !canDrop:
+		m.pendingPlacement = true
 	}
 }
 
-func (c *Core) ProcessRows() {
+func (m *Model) ProcessRows() {
 	shift := 0
-	for yr := range len(c.blocks[0]) - 1 {
-		y := len(c.blocks[0]) - yr - 2
+	for yr := range len(m.blocks[0]) - 1 {
+		y := len(m.blocks[0]) - yr - 2
 		score := true
-		for x := range len(c.blocks) - 2 {
+		for x := range len(m.blocks) - 2 {
 			if shift != 0 {
-				c.blocks[x+1][y+shift] = c.blocks[x+1][y]
+				m.blocks[x+1][y+shift] = m.blocks[x+1][y]
 			}
-			if c.blocks[x+1][y] == 0 {
+			if m.blocks[x+1][y] == 0 {
 				score = false
 			}
 		}
@@ -152,16 +152,16 @@ func (c *Core) ProcessRows() {
 			shift++
 		}
 	}
-	c.score += uint64(shift * shift)
+	m.score += uint64(shift * shift)
 }
 
-func (c *Core) PlaceCurrentBlock() {
-	for i := range len(c.currentBlock.shape) {
-		for j := range len(c.currentBlock.shape[0]) {
-			if !c.currentBlock.shape[i][j] {
+func (m *Model) PlaceCurrentBlock() {
+	for i := range len(m.currentBlock.shape) {
+		for j := range len(m.currentBlock.shape[0]) {
+			if !m.currentBlock.shape[i][j] {
 				continue
 			}
-			c.blocks[i+c.currentBlock.x][j+c.currentBlock.y] = c.currentBlock.color
+			m.blocks[i+m.currentBlock.x][j+m.currentBlock.y] = m.currentBlock.color
 		}
 	}
 }
