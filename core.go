@@ -1,6 +1,7 @@
 package tetris
 
 import (
+	"math"
 	"math/rand/v2"
 	"time"
 
@@ -13,14 +14,12 @@ type Model struct {
 	width  int
 	height int
 	paused bool
-	Fps    int
 	// hideHelp         bool TODO
 	currentBlock     *Block
 	nextBlock        *Block
 	pendingPlacement bool
 	blocks           [][]uint8
 	tickSpeed        int
-	tick             int
 	score            uint64
 	gameOver         bool
 	startTime        time.Time
@@ -57,8 +56,8 @@ func (m *Model) Reset() {
 	if m.Renderer == nil {
 		m.Renderer = lipgloss.DefaultRenderer()
 	}
-	m.tickSpeed = 20
 	m.startTime = time.Now()
+	m.tickSpeed = 1
 
 	m.grid = make([][]uint8, 12)
 	m.blocks = make([][]uint8, 12)
@@ -88,13 +87,7 @@ func (m *Model) Tick() {
 	if m.gameOver {
 		return
 	}
-	m.tick++
-	if m.tick%m.tickSpeed != 0 {
-		return
-	}
-	if m.tick%100 == 0 && m.tickSpeed != 1 {
-		m.tickSpeed -= 1
-	}
+	m.tickSpeed = int(math.Max(time.Since(m.startTime).Seconds()/60, 0)) + 1
 	m.Drop()
 	m.ProcessRows()
 }

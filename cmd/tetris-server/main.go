@@ -79,7 +79,6 @@ func teaHandler(s ssh.Session) (tea.Model, []tea.ProgramOption) {
 	pty, _, _ := s.Pty()
 	renderer := bubbletea.MakeRenderer(s)
 	m := tetris.Model{}
-	m.Fps = 30
 	m.Renderer = renderer
 	m.UpdateDims(pty.Window.Width, pty.Window.Height)
 	m.Reset()

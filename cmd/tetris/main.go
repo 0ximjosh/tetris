@@ -15,10 +15,8 @@ import (
 )
 
 func main() {
-	fps := flag.Int("fps", 30, "fps of the simulation")
 	flag.Parse()
 	m := tetris.Model{}
-	m.Fps = *fps
 	m.Reset()
 	p := tea.NewProgram(m, tea.WithAltScreen())
 	if _, err := p.Run(); err != nil {

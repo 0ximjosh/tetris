@@ -21,7 +21,7 @@ func (m Model) Animate() tea.Cmd {
 	if m.paused {
 		return nil
 	}
-	return tea.Tick(time.Second/time.Duration(m.Fps), func(_ time.Time) tea.Msg {
+	return tea.Tick(time.Second/time.Duration(m.tickSpeed), func(_ time.Time) tea.Msg {
 		return FrameMsg{}
 	})
 }
