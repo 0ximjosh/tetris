@@ -70,7 +70,6 @@ func (m *Model) GetNextBlockView() string {
 	return dialogBoxStyle.Render(b.String())
 }
 
-// GetHelpBox TODO
 func (m *Model) GetHelpBox() string {
 	dialogBoxStyle := m.Renderer.NewStyle().
 		Border(lipgloss.RoundedBorder()).
@@ -81,15 +80,11 @@ func (m *Model) GetHelpBox() string {
 		BorderRight(true).
 		BorderBottom(true)
 	options := list.New(
-		"h Show help",
+		"h Move Left",
+		"j Move Down",
+		"l Move Right",
+		"r Rotate",
 		"q Quit",
-		"b Blank canvas",
-		"r Random canvas",
-		"j Prev algo",
-		"k Next algo",
-		"c Cycle colors",
-		"[space] Pause",
-		"[click] toggle cell",
 	).Enumerator(list.Dash)
 	return dialogBoxStyle.Render(options.String())
 }

@@ -40,68 +40,60 @@ func (m Model) String() string {
 	gameViewLen := runewidth.StringWidth(removeColorFromString(gameViewLines[0]))
 	gameViewStartX := int(math.Floor(float64(m.width)/2)) - (gameViewLen / 2)
 	gameViewStartY := int(math.Floor(float64(m.height)/2) - 10)
-
 	playtime := lipgloss.NewStyle().Width(gameViewLen).Align(lipgloss.Center).Render(time.Since(m.startTime).Truncate(time.Second).String())
 	if m.gameOver {
 		playtime = lipgloss.NewStyle().Width(gameViewLen).Align(lipgloss.Center).Render(m.endTime.Sub(m.startTime).Truncate(time.Second).String())
 	}
 	gameViewLines = append(gameViewLines, playtime)
+	gameViewBox := ViewBox{Lines: gameViewLines, Len: gameViewLen, X: gameViewStartX, Y: gameViewStartY, Visable: true}
 
-	// TODO fix score box and next box being out of view
 	scoreBox := m.GetScoreView()
 	scoreBoxLines := strings.Split(scoreBox, "\n")
 	scoreBoxLen := runewidth.StringWidth(removeColorFromString(scoreBoxLines[0]))
 	scoreBoxStartX := int(math.Floor(float64(m.width)/2)) - gameViewLen/2 - scoreBoxLen - 3
 	scoreBoxStartY := int(math.Floor(float64(m.height)/2) - 10)
+	scoreViewBox := ViewBox{Lines: scoreBoxLines, Len: scoreBoxLen, X: scoreBoxStartX, Y: scoreBoxStartY, Visable: !m.gameOver}
 
 	nextBlockView := m.GetNextBlockView()
 	nextBlockViewLines := strings.Split(nextBlockView, "\n")
 	nextBlockViewLen := runewidth.StringWidth(removeColorFromString(nextBlockViewLines[0]))
 	nextBlockViewStartX := int(math.Floor(float64(m.width)/2)) - gameViewLen/2 - nextBlockViewLen - 3
 	nextBlockViewStartY := int(math.Floor(float64(m.height)/2)) + len(scoreBoxLines) - 10
+	nextBlockViewBox := ViewBox{Lines: nextBlockViewLines, Len: nextBlockViewLen, X: nextBlockViewStartX, Y: nextBlockViewStartY, Visable: !m.gameOver}
 
 	gameOverView := m.GetGameOverView()
 	gameOverViewLines := strings.Split(gameOverView, "\n")
 	gameOverViewLen := runewidth.StringWidth(removeColorFromString(gameOverViewLines[0]))
 	gameOverViewStartX := int(math.Floor(float64(m.width)/2)) - gameViewLen/2 - nextBlockViewLen - 3
 	gameOverViewStartY := int(math.Floor(float64(m.height)/2)) + len(scoreBoxLines) + len(nextBlockViewLines) - 10
+	gameOverViewBox := ViewBox{Lines: gameOverViewLines, Len: gameOverViewLen, X: gameOverViewStartX, Y: gameOverViewStartY, Visable: m.gameOver}
+
+	helpView := m.GetHelpBox()
+	helpViewLines := strings.Split(helpView, "\n")
+	helpViewLen := runewidth.StringWidth(removeColorFromString(helpViewLines[0]))
+	helpViewStartX := int(math.Floor(float64(m.width)/2)) + gameViewLen/2 + 3
+	helpViewStartY := int(math.Floor(float64(m.height)/2)) - 10
+	helpViewBox := ViewBox{Lines: helpViewLines, Len: helpViewLen, X: helpViewStartX, Y: helpViewStartY, Visable: true}
 
 	// If screen is too small, request larger screen
 	if m.width < gameViewLen || m.height < 24 {
 		return "Game zone is too small\nPlease zoom out"
 	}
-	shouldPrintBoxes := m.width > gameViewLen+nextBlockViewLen+20
+	shouldPrintBoxes := m.width > gameViewLen+nextBlockViewLen+24
+	nextBlockViewBox.Visable = shouldPrintBoxes && nextBlockViewBox.Visable
+	helpViewBox.Visable = shouldPrintBoxes
+	scoreViewBox.Visable = shouldPrintBoxes
+	gameOverViewBox.Visable = shouldPrintBoxes && gameOverViewBox.Visable
+
+	boxes := []ViewBox{gameViewBox, nextBlockViewBox, scoreViewBox, gameOverViewBox, helpViewBox}
 
 	for y := range m.height {
+	layer: // label for continueing outer loop
 		for x := range m.width {
-
-			// gameView area
-			if x >= gameViewStartX && x < gameViewStartX+gameViewLen && y >= gameViewStartY && y < gameViewStartY+len(gameViewLines) {
-				if x == gameViewStartX {
-					b.WriteString(gameViewLines[y-gameViewStartY])
+			for _, box := range boxes {
+				if box.MaybeWriteLine(x, y, &b) {
+					continue layer
 				}
-				continue
-			}
-
-			if shouldPrintBoxes && x >= nextBlockViewStartX && x < nextBlockViewStartX+nextBlockViewLen && y >= nextBlockViewStartY && y < nextBlockViewStartY+len(nextBlockViewLines) {
-				if x == nextBlockViewStartX {
-					b.WriteString(nextBlockViewLines[y-nextBlockViewStartY])
-				}
-				continue
-			}
-
-			if shouldPrintBoxes && x >= scoreBoxStartX && x < scoreBoxStartX+scoreBoxLen && y >= scoreBoxStartY && y < scoreBoxStartY+len(scoreBoxLines) {
-				if x == scoreBoxStartX {
-					b.WriteString(scoreBoxLines[y-scoreBoxStartY])
-				}
-				continue
-			}
-
-			if shouldPrintBoxes && x >= gameOverViewStartX && x < gameOverViewStartX+gameOverViewLen && y >= gameOverViewStartY && y < gameOverViewStartY+len(gameOverViewLines) && m.gameOver {
-				if x == gameOverViewStartX {
-					b.WriteString(gameOverViewLines[y-gameOverViewStartY])
-				}
-				continue
 			}
 			b.WriteString(" ")
 		}
@@ -111,4 +103,25 @@ func (m Model) String() string {
 		b.WriteRune('\n')
 	}
 	return b.String()
+}
+
+type ViewBox struct {
+	Lines   []string
+	Len     int
+	X       int
+	Y       int
+	Visable bool
+}
+
+func (v *ViewBox) MaybeWriteLine(x, y int, b *strings.Builder) bool {
+	if !v.Visable {
+		return false
+	}
+	if x >= v.X && x < v.X+v.Len && y >= v.Y && y < v.Y+len(v.Lines) {
+		if x == v.X {
+			b.WriteString(v.Lines[y-v.Y])
+		}
+		return true
+	}
+	return false
 }
