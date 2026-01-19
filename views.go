@@ -80,10 +80,10 @@ func (m *Model) GetHelpBox() string {
 		BorderRight(true).
 		BorderBottom(true)
 	options := list.New(
-		"h Move Left",
-		"j Move Down",
-		"l Move Right",
-		"r Rotate",
+		"h/a Move Left",
+		"j/s Move Down",
+		"l/d Move Right",
+		"r/w Rotate",
 		"q Quit",
 	).Enumerator(list.Dash)
 	return dialogBoxStyle.Render(options.String())

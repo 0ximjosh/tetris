@@ -71,13 +71,13 @@ func (m *Model) MoveBlock(d string) {
 		return
 	}
 	switch d {
-	case "h":
+	case "left":
 		tmp := *m.currentBlock
 		tmp.x -= 1
 		if m.CanPlace(tmp) {
 			m.currentBlock.x--
 		}
-	case "l":
+	case "right":
 		tmp := *m.currentBlock
 		tmp.x += 1
 		if m.CanPlace(tmp) {
