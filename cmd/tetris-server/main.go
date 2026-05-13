@@ -23,12 +23,14 @@ const (
 
 	capRenderCell    = "render.cell.v1"
 	capInputKeyboard = "input.keyboard.v1"
+	capScoreReport   = "score.report.v1"
 
 	typeHello  = "hello"
 	typeReady  = "ready"
 	typeFrame  = "frame"
 	typeInput  = "input"
 	typeResize = "resize"
+	typeScore  = "score"
 	typeError  = "error"
 
 	frameFull = "full"
@@ -64,6 +66,11 @@ type frame struct {
 	Cells  []tetris.Cell `json:"cells"`
 }
 
+type score struct {
+	Type  string `json:"type"`
+	Value int64  `json:"value"`
+}
+
 type input struct {
 	Type string `json:"type"`
 	Kind string `json:"kind"`
@@ -82,12 +89,14 @@ type gameError struct {
 }
 
 type session struct {
-	conn    *websocket.Conn
-	model   tetris.Model
-	seq     int
-	mu      sync.Mutex
-	writeMu sync.Mutex
-	done    chan struct{}
+	conn      *websocket.Conn
+	model     tetris.Model
+	seq       int
+	lastScore int64
+	scoreSent bool
+	mu        sync.Mutex
+	writeMu   sync.Mutex
+	done      chan struct{}
 }
 
 var upgrader = websocket.Upgrader{CheckOrigin: func(*http.Request) bool { return true }}
@@ -142,10 +151,13 @@ func handleGGP(w http.ResponseWriter, r *http.Request) {
 	s.model.UpdateDims(maxInt(hello.Viewport.Cols, 20), maxInt(hello.Viewport.Rows, 8))
 	s.model.Reset()
 
-	if err := s.write(ready{Type: typeReady, Title: "Tetris", TargetFPS: 4, Capabilities: []string{capRenderCell, capInputKeyboard}}); err != nil {
+	if err := s.write(ready{Type: typeReady, Title: "Tetris", TargetFPS: 4, Capabilities: []string{capRenderCell, capInputKeyboard, capScoreReport}}); err != nil {
 		return
 	}
 	if err := s.sendFrame(); err != nil {
+		return
+	}
+	if err := s.sendScoreIfChanged(); err != nil {
 		return
 	}
 
@@ -186,6 +198,7 @@ func (s *session) readLoop() {
 
 		if sendFrame {
 			_ = s.sendFrame()
+			_ = s.sendScoreIfChanged()
 		}
 	}
 }
@@ -203,6 +216,10 @@ func (s *session) tickLoop() {
 			s.model.Advance()
 			s.mu.Unlock()
 			if err := s.sendFrame(); err != nil {
+				s.close()
+				return
+			}
+			if err := s.sendScoreIfChanged(); err != nil {
 				s.close()
 				return
 			}
@@ -224,6 +241,19 @@ func (s *session) sendFrame() error {
 	frame := frame{Type: typeFrame, Seq: s.seq, Mode: frameFull, Cells: s.model.Cells()}
 	s.mu.Unlock()
 	return s.write(frame)
+}
+
+func (s *session) sendScoreIfChanged() error {
+	s.mu.Lock()
+	current := s.model.Score()
+	if s.scoreSent && current == s.lastScore {
+		s.mu.Unlock()
+		return nil
+	}
+	s.scoreSent = true
+	s.lastScore = current
+	s.mu.Unlock()
+	return s.write(score{Type: typeScore, Value: current})
 }
 
 func (s *session) write(value any) error {

@@ -50,6 +50,13 @@ func (m Model) FrameInterval() time.Duration {
 	return time.Second / time.Duration(m.tickSpeed)
 }
 
+func (m Model) Score() int64 {
+	if m.score > uint64(math.MaxInt64) {
+		return math.MaxInt64
+	}
+	return int64(m.score)
+}
+
 func (m *Model) Cells() []Cell {
 	if !m.Ready() {
 		return nil
